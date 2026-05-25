@@ -99,6 +99,68 @@ Deserialized Data:
 <details>
   <summary>Pickling Custom Classes</summary>
 
+Learn how to serialize and deserialize custom Python objects using the pickle module.
+
+### Instructions:
+
+#### 1 - Create a custom Python class named CustomObject. This class should have the following attributes:
+
+- name (a string)
+- age (an integer)
+- is_student (a boolean)
+
+Additionally, the class should have a `display` method to print out the object's attributes with the following format:
+```
+Name: John
+Age: 25
+Is Student: True
+``` 
+
+#### 2 - Implement two methods within this class:
+
+    serialize(self, filename): This method will take a filename as its parameter. Using the pickle module, it will serialize the current instance of the object and save it to the provided filename.
+    @classmethod deserialize(cls, filename): This class method will take a filename as its parameter. Using the pickle module, it will load and return an instance of the CustomObject from the provided filename.
+
+#### 3 - Save your code in a file named task_01_pickle.py.
+
+Make sure to handle possible exceptions for non-existent or malformed files. If this happens, the methods should return None
+
+### Execution Output Example:
+
+#### Sample test code:
+
+```
+#!/usr/bin/env python3
+from task_01_pickle import CustomObject
+
+# Create an instance of CustomObject
+obj = CustomObject(name="John", age=25, is_student=True)
+print("Original Object:")
+obj.display()
+
+# Serialize the object
+obj.serialize("object.pkl")
+
+# Deserialize the object into a new instance
+new_obj = CustomObject.deserialize("object.pkl")
+print("\nDeserialized Object:")
+new_obj.display()
+
+```
+
+#### Output:
+```
+Original Object:
+Name: John
+Age: 25
+Is Student: True
+
+Deserialized Object:
+Name: John
+Age: 25
+Is Student: True
+```
+
 </details>
 
 ## Details - Task 02
