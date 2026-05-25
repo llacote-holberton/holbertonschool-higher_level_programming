@@ -66,7 +66,7 @@ class CustomObject():
             # Same here: must precise 'r' for read AND 'b' for binary
             with open(filename, 'rb') as f:
                 return pickle.load(f)
-        except (OSError, pickle.PickleError) as e:
+        except Exception as e:
             # print(e)
             return None
 
