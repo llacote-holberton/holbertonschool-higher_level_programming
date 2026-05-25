@@ -61,7 +61,7 @@ class CustomObject():
             return False
 
     @classmethod
-    def deserialize(cls, filename) -> CustomObject | None:
+    def deserialize(cls, filename):
         try:
             # Same here: must precise 'r' for read AND 'b' for binary
             with open(filename, 'rb') as f:
