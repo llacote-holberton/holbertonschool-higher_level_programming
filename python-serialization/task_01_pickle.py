@@ -67,7 +67,7 @@ class CustomObject():
             with open(filename, 'rb') as f:
                 return pickle.load(f)
         except (OSError, pickle.PickleError) as e:
-            print(e)
+            # print(e)
             return None
 
     # IMPORTANT: If no implementation of that magic method, Python would just
