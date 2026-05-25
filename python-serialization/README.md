@@ -229,6 +229,83 @@ Eve,30,San Francisco
 <details>
   <summary>Serializing and Deserializing with XML</summary>
 
+In this exercise we'll explore serialization and deserialization using XML as an alternative format to JSON.
+
+### Instructions:
+
+1. Begin by importing the required modules. You can use the `xml.etree.ElementTree` module which is a part of Python's standard library for XML processing:
+
+```python
+import xml.etree.ElementTree as ET
+```
+
+2. Define two main functions:
+
+- `serialize_to_xml(dictionary, filename)`: This will take a Python dictionary and a filename as parameters. It should serialize the dictionary into XML and save it to the given filename.
+- `deserialize_from_xml(filename)`: This will take a filename as its parameter, read the XML data from that file, and return a deserialized Python dictionary.
+
+3. For `serialize_to_xml`:
+
+- Create a root element, e.g., `<data>`.
+- Iterate through the dictionary items and add them as child elements to the root.
+- Write the XML tree to the provided filename using the `ET.ElementTree` class.
+
+4. For `deserialize_from_xml`:
+
+- Parse the XML file using `ET.parse`.
+- Navigate through the XML elements to reconstruct the dictionary.
+- Return the constructed dictionary.
+
+5. Be cautious about data types. XML doesn't differentiate between numbers and strings like Python does. You might need to manage type conversions.
+
+6. Save your work in `task_03_xml.py`.
+
+### Testing Your Code:
+
+#### Code
+
+```python
+#!/usr/bin/env python3
+from task_03_xml import serialize_to_xml, deserialize_from_xml
+
+def main():
+    sample_dict = {
+        'name': 'John',
+        'age': '28',
+        'city': 'New York'
+    }
+
+    xml_file = "data.xml"
+    serialize_to_xml(sample_dict, xml_file)
+    print(f"Dictionary serialized to {xml_file}")
+
+    deserialized_data = deserialize_from_xml(xml_file)
+    print("\nDeserialized Data:")
+    print(deserialized_data)
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Output
+
+```
+Dictionary serialized to data.xml
+
+Deserialized Data:
+{'name': 'John', 'age': '28', 'city': 'New York'}
+```
+
+#### Expected `data.xml`
+
+```xml
+<data>
+    <name>John</name>
+    <age>28</age>
+    <city>New York</city>
+</data>
+```
+
 </details>
 
 # Resources
