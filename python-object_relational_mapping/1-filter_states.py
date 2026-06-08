@@ -33,7 +33,7 @@ if __name__ == "__main__":
     list_states_query = """
         SELECT *
         FROM states
-        WHERE name LIKE "N%"
+        WHERE BINARY name LIKE "N%"
         ORDER BY id
     """
 
@@ -41,3 +41,6 @@ if __name__ == "__main__":
     states_list = cursor.fetchall()
     for state in states_list:
         print(state)
+
+    cursor.close()
+    db_connection.close()
