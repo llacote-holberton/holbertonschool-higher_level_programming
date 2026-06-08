@@ -22,34 +22,41 @@ if __name__ == "__main__":
     db_host = "localhost"
     db_port = 3306  # MUST be an actual integer
 
-    mysql_connection = MySQLdb.connect(
-        host=db_host,
-        user=db_user,
-        passwd=db_passwd,
-        port=db_port,
-        db=db_database
-    )
+    # Gracefully catch errors
+    try:
+        mysql_connection = MySQLdb.connect(
+            host=db_host,
+            user=db_user,
+            passwd=db_passwd,
+            port=db_port,
+            db=db_database
+        )
 
-    cursor = mysql_connection.cursor()
+        cursor = mysql_connection.cursor()
 
-    # Should normally check/sanitize just in case
-    statename_filter = sys.argv[4]
-    # Confer https://peps.python.org/pep-0249/#id20
-    #   for details on "prepared requests" with the driver
-    #   sanitizing the string itself.
-    list_state_cities_query = """
-        SELECT c.id, c.name, s.name
-        FROM cities as c
-        JOIN states as s
-          ON c.state_id = s.id
-        WHERE s.name = %s
-        ORDER BY c.id;
-    """
-    cursor.execute(list_state_cities_query, (statename_filter,))
+        # Should normally check/sanitize just in case
+        statename_filter = sys.argv[4]
+        # Confer https://peps.python.org/pep-0249/#id20
+        #   for details on "prepared requests" with the driver
+        #   sanitizing the string itself.
+        list_state_cities_query = """
+            SELECT c.id, c.name, s.name
+            FROM cities as c
+            JOIN states as s
+            ON c.state_id = s.id
+            WHERE s.name = %s
+            ORDER BY c.id;
+        """
+        cursor.execute(list_state_cities_query, (statename_filter,))
 
-    all_cities_list = cursor.fetchall()
-    for city in all_cities_list:
-        print(city)
+        state_cities_list = cursor.fetchall()
+        # Using the "comprehension" short-hand to get used to it
+        #   although less readable at first than explicit loop and append.
+        cities_names = [city[1] for city in state_cities_list]
+        print(", ".join(cities_names))
 
-    cursor.close()
-    mysql_connection.close()
+        cursor.close()
+        mysql_connection.close()
+    except Exception as e:
+        # print(e)
+        pass
