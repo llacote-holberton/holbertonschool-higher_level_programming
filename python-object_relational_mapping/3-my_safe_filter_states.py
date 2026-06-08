@@ -40,6 +40,7 @@ if __name__ == "__main__":
     search_specific_state_query = """
         SELECT * FROM states
         WHERE name = BINARY %s
+        ORDER BY id
     """
     cursor.execute(
         search_specific_state_query,
