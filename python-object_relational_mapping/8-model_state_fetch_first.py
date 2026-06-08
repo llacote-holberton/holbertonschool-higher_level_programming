@@ -26,7 +26,10 @@ if __name__ == "__main__":
     # I choose to go for "ORDER + LIMIT" in case table evolves and "1"
     #   ends up being removed (hence not the "first" anymore)
     first_state = states_reader.query(State).order_by(State.id).first()
-    print(f"{first_state.id}: {first_state.name}")
+    if first_state is None:
+        print("Nothing")
+    else:
+        print(f"{first_state.id}: {first_state.name}")
     # Preferred over session.query(State).order_by(State.id).limit(1).all()
     #  because the latter would return a list whatever the limit number is
     #  (and whether or not there are actual results) thus forcing the use
