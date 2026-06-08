@@ -11,7 +11,6 @@ if __name__ == "__main__":
         print("""
             Please db connection infos in that order: mySql user name,
             related password, name of the database to manipulate.
-            Plus the 'name' pattern you want to search among all states.
             The script will expect that MySQL in installed on the same machine
               (aka "localhost") and uses default port (= 3306).
             """)
