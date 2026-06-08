@@ -38,7 +38,7 @@ if __name__ == "__main__":
     list_states_query = """
         SELECT *
         FROM states
-        WHERE BINARY name LIKE "%{search_pattern}%"
+        WHERE BINARY name = "{search_pattern}"
         ORDER BY id
     """.format(search_pattern=db_searched_state)
 
