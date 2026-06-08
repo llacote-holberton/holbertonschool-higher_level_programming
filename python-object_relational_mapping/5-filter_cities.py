@@ -15,6 +15,7 @@ if __name__ == "__main__":
             The script will expect that MySQL in installed on the same machine
               (aka "localhost") and uses default port (= 3306).
             """)
+        sys.exit(1)
 
     db_user = sys.argv[1]
     db_passwd = sys.argv[2]
@@ -40,7 +41,7 @@ if __name__ == "__main__":
         #   for details on "prepared requests" with the driver
         #   sanitizing the string itself.
         list_state_cities_query = """
-            SELECT c.id, c.name, s.name
+            SELECT c.name
             FROM cities as c
             JOIN states as s
             ON c.state_id = s.id
@@ -52,11 +53,12 @@ if __name__ == "__main__":
         state_cities_list = cursor.fetchall()
         # Using the "comprehension" short-hand to get used to it
         #   although less readable at first than explicit loop and append.
-        cities_names = [city[1] for city in state_cities_list]
+        cities_names = [city[0] for city in state_cities_list]
         print(", ".join(cities_names))
 
         cursor.close()
         mysql_connection.close()
     except Exception as e:
         # print(e)
-        pass
+        print("")
+        sys.exit(0)
