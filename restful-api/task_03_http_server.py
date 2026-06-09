@@ -25,7 +25,8 @@ class PeopleDataHandler(BaseHTTPRequestHandler):
     def homepage(self):
         """Handle the homepage"""
         self.send_response(200)
-        self.send_header('Content-Type', 'text/html')
+        # self.send_header('Content-Type', 'text/html')
+        self.send_header('Content-Type', 'text/plain')
         self.end_headers()
         welcome_message = """
             <html>
@@ -34,7 +35,8 @@ class PeopleDataHandler(BaseHTTPRequestHandler):
                 </body>
             </html>
         """
-        self.wfile.write(welcome_message.encode('utf-8'))
+        welcome_plain = "Hello, this is a simple API!"
+        self.wfile.write(welcome_plain.encode('utf-8'))
 
     def error_404(self):
         self.send_response(404)
@@ -42,7 +44,9 @@ class PeopleDataHandler(BaseHTTPRequestHandler):
         self.end_headers()
         sanitized_url = html.escape(self.path)
         err_msg = "<html><body>Sorry, requested url {} not found</body></html>"
-        self.wfile.write(err_msg.format(sanitized_url).encode('utf-8'))
+        error_plain = "Endpoint not found"
+        # self.wfile.write(err_msg.format(sanitized_url).encode('utf-8'))
+        self.wfile.write(error_plain.encode('utf-8'))
 
     def page__data(self):
         self.send_response(200)  # Code for "all ok"
