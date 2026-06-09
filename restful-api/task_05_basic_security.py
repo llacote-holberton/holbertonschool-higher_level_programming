@@ -32,6 +32,40 @@ app.config["JWT_SECRET_KEY"] = "Python docs suck in general but JWT is worse!"
 #    b) not stored in Git or the like nor readable easily.
 
 
+def _user_exists(username: str) -> bool:
+    return any(u.get('username') == username for u in users.values())
+
+
+def _password_matches(username: str, password: str) -> bool:
+    # This time we know all content of our users registry
+    #   so here exceptionally we just assume "key == username"
+    stored_password_hash = users[username].get('password')
+    # print(stored_password)
+    # print(generate_password_hash(password))
+    # Ends up with different hashs, but no problem as the salt is
+    #   publicly stored inside each why is why library reuse it to
+    #   make comparisons with provided "raw" strings.
+    return check_password_hash(stored_password_hash, password)
+    # Which is why the function MUST have a hash in first argument, and a
+    #   "plain" password as second, so it can hash it with the same salt and
+    #   see if the resulting temporary hash is 100% identical.
+
+
+def _is_admin(username: str) -> bool:
+    # Same as above: we assume key == username AND role has only one str value.
+    # We also assume the "user exists" check has been made beforehand!
+    return users[username].get('role') == "admin"
+
+
 if __name__ == "__main__":
     print("\n=== @dev: print users ===\n", users, "\n=== end ===\n", sep="\n")
-    app.run()
+    # app.run()
+
+    def test_basic():
+        print("'toto' exists? Expected False, got: ", _user_exists("toto"))
+        print("'admin_secondary' (True)? ", _user_exists("admin_secondary"))
+        print(_password_matches("admin_secondary", "adminpass2"))
+        print(_is_admin("admin_secondary"))
+        print(_is_admin("writer_alice"))
+
+    test_basic()
