@@ -17,6 +17,8 @@ from flask_jwt_extended import JWTManager
 from werkzeug.security import generate_password_hash  # Encrypts strings
 from werkzeug.security import check_password_hash     # "Mirror" method
 
+from flask_httpauth import HTTPBasicAuth  # Required for "basic auth"
+
 # Custom module externalizing users's registry for readability/maintainability.
 from task_05_users_registry import users
 
@@ -30,6 +32,11 @@ app.config["JWT_SECRET_KEY"] = "Python docs suck in general but JWT is worse!"
 # In a real project would be an environment variable injected at runtime
 # so a) unique per environment (simple for local/isolated, strong for prod)
 #    b) not stored in Git or the like nor readable easily.
+
+# REQUIRED instanciation to parse the annocations @auth.*
+# https://flask-httpauth.readthedocs.io/en/latest/getting-started.html
+#                                          #basic-authentication-example
+auth = HTTPBasicAuth()
 
 
 def _user_exists(username: str) -> bool:
@@ -57,9 +64,22 @@ def _is_admin(username: str) -> bool:
     return users[username].get('role') == "admin"
 
 
+@auth.verify_password
+def verify_password(username, password):
+    if not _user_exists(username):
+        return False
+    return _password_matches(username, password)
+
+
 @app.route('/')
 def homepage():
     return "Welcome on my mini-simulation of Auth management"
+
+
+@app.route('/basic-protected')
+def user_auth__plain_password_check():
+    access_confirmation = "Basic Auth: Access Granted"
+    return access_confirmation
 
 
 if __name__ == "__main__":
