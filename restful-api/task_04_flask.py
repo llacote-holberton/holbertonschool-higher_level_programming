@@ -75,28 +75,25 @@ def show_user_data(username):
 @app.route('/add_user', methods=['POST'])
 def insert_new_user():
     """Adds a user in registry if valid data provided"""
-
-    # Defining the responses for different "use-cases"
-    error_response__invalid_json = ({"error": "Invalid JSON"}, 400)
-    error_response__missing_username = ({"error": "Username is required"}, 400)
-    error_response__user_exists = ({"error": "Username already exists"}, 409)
-    # request is a "local proxy", one Request instance among many
-    #   which Flask associate to a unique Thread for a given HTTP request.
-    # So it automatically has the "right context"
-    # received_data = request.get_json()
     # Option automatically rejects malformed JSON and returns None instead.
     received_data = request.get_json(silent=True)
     if received_data is None:
-        return error_response__invalid_json
+        return jsonify({"error": "Invalid JSON"}), 400
+
     # Get is the safe way to try and access a key in dict
     new_username = received_data.get("username")
     if new_username is None:
-        return error_response__missing_username
+        return jsonify({"error": "Username is required"}), 400
+
     if _user_exists(new_username):
-        return error_response__user_exists
+        return jsonify({"error": "Username already exists"}), 409
+
+    # Si tout est bon, on enregistre
     users[new_username] = received_data
     success_message = {"message": "User added", "user": received_data}
-    return (jsonify(success_message), 201)
+    # MUST NOT put into parenthesis otherwise Flask does NOT understand right.
+    # return (jsonify(success_message), 201)
+    return jsonify(success_message), 201
 
 
 """ TO TEST route with Curl...
