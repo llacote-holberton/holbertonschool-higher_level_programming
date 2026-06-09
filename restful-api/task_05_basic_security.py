@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Module experimenting with Requests extension"""
+"""Module experimenting with AUTH security management"""
 
 from flask import Flask    # Required to set up a webapp
 from flask import jsonify  # Required for simple json manipulation
@@ -57,9 +57,14 @@ def _is_admin(username: str) -> bool:
     return users[username].get('role') == "admin"
 
 
+@app.route('/')
+def homepage():
+    return "Welcome on my mini-simulation of Auth management"
+
+
 if __name__ == "__main__":
     print("\n=== @dev: print users ===\n", users, "\n=== end ===\n", sep="\n")
-    # app.run()
+    app.run()
 
     def test_basic():
         print("'toto' exists? Expected False, got: ", _user_exists("toto"))
@@ -67,5 +72,3 @@ if __name__ == "__main__":
         print(_password_matches("admin_secondary", "adminpass2"))
         print(_is_admin("admin_secondary"))
         print(_is_admin("writer_alice"))
-
-    test_basic()
