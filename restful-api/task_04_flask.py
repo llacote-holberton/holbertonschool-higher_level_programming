@@ -47,7 +47,7 @@ def _user_exists(username: str) -> bool:
     return any(u.get('username') == username for u in users.values())
 
 
-@app.route('/user/<string:username>')
+@app.route('/users/<string:username>')
 def show_user_data(username):
     """Returns all data for given username if exist"""
     # Using "any" syntax wouldn't work as the "context" is lost
