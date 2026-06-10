@@ -137,6 +137,41 @@ def request_admin_access_with_jwt():
         return jsonify(error=msg__access_refused_invalid_role), 403
 
 
+# ===== EXTRA ROUTES to demonstrate VARIANTS USES of JWT =====
+@app.route('/get_jwt_with_role', methods=["POST"])
+def user_auth__get_jwt_with_role():
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
+    if username is None or not _user_exists(username):
+        return jsonify(msg="Invalid username"), 401
+    if not _password_matches(username, password):
+        return jsonify(msg="Wrong password"), 401
+
+    # THIS TIME we add the "role information" in an "accessory objet" called
+    # 'additional_claims' which is designed to hold any contextual info which
+    #   may be useful for interactions between authentified user and the app.
+    user_jwt_with_role = create_access_token(
+        identity=username,
+        additional_claims={"role": users[username]["role"]}
+    )
+    return jsonify(access_token=user_jwt_with_role)
+
+
+@app.route('/writer-only', methods=["GET"])
+@jwt_required()
+def request_writer_access_with_jwt_bearing_role():
+    required_role = 'writer'
+    msg__access_granted = "Content Edition Access: Granted"
+    msg__access_refused_invalid_role = "Writer role required"
+
+    user_token_infos = get_jwt()
+    if user_token_infos.get('role') == 'writer':
+        # Reminder: if nothing specified Flask automagically sets 200 status.
+        return jsonify(access_granted=msg__access_granted)
+    else:
+        return jsonify(error=msg__access_refused_invalid_role), 403
+
+
 # ===== JWT EXCEPTION HANDLERS, using examples provided by task =====
 @jwt.unauthorized_loader
 def handle_unauthorized_error(err):

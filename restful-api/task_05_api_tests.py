@@ -134,6 +134,28 @@ def test_access_admin_route_as_standard_role():
     print(f"@dev RESULT for {std_usr}: {code}, msg {msg}\n")
 
 
+def test_access_writer_route_as_writer_role():
+    writer = users['writer_alice'].get('username')
+    pwd = users['writer_alice'].get('raw_pwd')
+    print(f"@dev Getting JWT for usr '{writer}'")
+    jwt_response = requests.post(
+        f"{server_url}/get_jwt_with_role",
+        json={"username": writer, "password": pwd}
+    )
+    user_jwt = jwt_response.json()["access_token"]
+    print(f"@dev token retrieved: {user_jwt}")
+    attempt_restrict_access = requests.get(
+        f"{server_url}/writer-only",
+        # Required have the token beared in header
+        headers={
+            "Authorization": f"Bearer {user_jwt}"
+        }
+    )
+    code = attempt_restrict_access.status_code
+    msg = attempt_restrict_access.json()
+    print(f"@dev RESULT for {writer}: {code}, msg {msg}\n")
+
+
 if __name__ == "__main__":
     print("======= START Auth API TESTS ========")
     test_home()
@@ -157,3 +179,6 @@ if __name__ == "__main__":
 
     print("=== @dev Testing access to admin area as a regular user ===")
     test_access_admin_route_as_standard_role()
+
+    print("=== @dev Testing access to content management area as a writer ===")
+    test_access_writer_route_as_writer_role()
