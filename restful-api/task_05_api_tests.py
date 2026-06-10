@@ -5,6 +5,7 @@ from task_05_users_registry import users  # Used to automate tests on all users
 
 server_url = "http://localhost:5000"      # Global var for tests consistency
 
+
 def test_home():
     homepage = requests.get(f"{server_url}/")
     print(homepage)
@@ -28,7 +29,6 @@ def test_login_with_autoheader():
 
 def test_get_jwt_for_valid(user):
 
-
     valid_name = user.get('username')
     valid_pwd = user.get('raw_pwd')
     print(f"@dev REQUEST: JWT for user '{valid_name}' / pwd '{valid_pwd}'")
@@ -42,6 +42,7 @@ def test_get_jwt_for_valid(user):
     token = valid_req_return.json()["access_token"]
     print(f"@dev RESULT: status {code}, token value...\n {token}\n")
 
+
 def test_get_jwt_for_inexisting_user():
 
     inexisting = "Nemo"
@@ -52,6 +53,7 @@ def test_get_jwt_for_inexisting_user():
         json={"username": inexisting, "password": pwd}
     )
     print(f"@dev RESULT: {response.status_code}, msg {response.json()}\n")
+
 
 def test_get_jwt_with_wrong_password():
     valid_name = users['user_standard'].get('username')
@@ -64,6 +66,28 @@ def test_get_jwt_with_wrong_password():
         json={"username": valid_name, "password": wrong_pwd}
     )
     print(f"@dev RESULT: {response.status_code}, msg {response.json()}\n")
+
+
+def test_access_restricted_route_as_standard():
+    valid_name = users['user_standard'].get('username')
+    valid_pwd = users['user_standard'].get('raw_pwd')
+    print(f"@dev Getting JWT for usr '{valid_name}'")
+    jwt_response = requests.post(
+        f"{server_url}/login",
+        json={"username": valid_name, "password": valid_pwd}
+    )
+    user_jwt = jwt_response.json()["access_token"]
+    print(f"@dev token retrieved: {user_jwt}")
+    attempt_restrict_access = requests.get(
+        f"{server_url}/jwt-protected",
+        # Required have the token beared in header
+        headers={
+            "Authorization": f"Bearer {user_jwt}"
+        }
+    )
+    code = attempt_restrict_access.status_code
+    msg = attempt_restrict_access.json()
+    print(f"@dev RESULT for {valid_name}: {code}, msg {msg}\n")
 
 
 if __name__ == "__main__":
@@ -81,19 +105,5 @@ if __name__ == "__main__":
     print("=== @dev Testing JWT retrieval for 1st user with wrong pwd ===")
     test_get_jwt_with_wrong_password()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print("=== @dev Testing JWT retrieval AND use for 'user_standard' ===")
+    test_access_restricted_route_as_standard()

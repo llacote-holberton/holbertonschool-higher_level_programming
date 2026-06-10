@@ -41,6 +41,7 @@ auth = HTTPBasicAuth()
 # REQUIRED instanciation EXACTLY LIKE THIS to use the JWT auth system.
 jwt = JWTManager(app)
 
+
 def _user_exists(username: str) -> bool:
     return any(u.get('username') == username for u in users.values())
 
@@ -99,6 +100,22 @@ def user_auth__get_jwt_token():
     #   as long as it is serialized.
     user_jwt = create_access_token(identity=username)
     return jsonify(access_token=user_jwt)
+
+
+@app.route('/jwt-protected', methods=["GET"])
+# ESSENTIAL! Function body is executed ONLY IF REQUEST HAS VALID JWT
+# Otherwise it sends error 422 (by default) immediately.
+@jwt_required()
+def request_restricted_access_with_jwt():
+    # If we get here then by design there is a valid jwt usable in context.
+    # Python automagically "extracts" the "identity" and "claims" metadata
+    #   from the token provided in Request Headers.
+    current_user = get_jwt_identity()
+    # Above: useful IF we wanted to use the username contained in the jwt
+    return jsonify(access_confirmation="JWT Auth: Access Granted")
+    # ONLY WAY to control "error handling" is using specific @jwt.* decorators:
+    # invalid_token_loader, expired_token_loader, unauthorized_loader etc
+
 
 if __name__ == "__main__":
     print("\n=== @dev: print users ===\n", users, "\n=== end ===\n", sep="\n")
