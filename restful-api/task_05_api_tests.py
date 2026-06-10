@@ -2,11 +2,29 @@
 """Module testing quality of auth management"""
 import requests                           # Used to make test requests
 from task_05_users_registry import users  # Used to automate tests on all users
+from task_05_basic_security import (
+    _user_exists,
+    _password_matches,
+    _is_admin
+)
 
 server_url = "http://localhost:5000"      # Global var for tests consistency
 
 
 # ========== UNIT "Quick & dirty debug 'test' functions"  ==========
+def check_registry_availability_and_content():  # Previously "test_basic"
+    """Prints user dictionary and ensures it's readable"""
+    print("\n=== @dev: Printing known users in registry ===\n")
+    for key, user in users.items():
+        print(f"'{key}' data:\n {user} \n")
+    print("\n=== @dev: End of registr, starting basic tests ===\n")
+    print("'toto' exists? Expected False, got: ", _user_exists("toto"))
+    print("'admin_secondary' (True)? ", _user_exists("admin_secondary"))
+    print(_password_matches("admin_secondary", "adminpass2"))
+    print(_is_admin("admin_secondary"))
+    print(_is_admin("writer_alice"))
+
+
 def test_home():
     """
     Tests availability of the home route.
@@ -269,6 +287,10 @@ def test_access_writer_route_as_writer_role():
 
 
 def run_tests():
+    """Simple wrapper to run all tests"""
+    print("======= Prerequisite: available registry ========")
+    check_registry_availability_and_content()
+
     print("======= START Auth API TESTS ========")
 
     print("=== @dev Testing Home (expected 200) ===")

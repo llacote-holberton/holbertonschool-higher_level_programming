@@ -267,12 +267,4 @@ def handle_needs_fresh_token_error(err):
 
 
 if __name__ == "__main__":
-    print("\n=== @dev: print users ===\n", users, "\n=== end ===\n", sep="\n")
     app.run()
-
-    def test_basic():
-        print("'toto' exists? Expected False, got: ", _user_exists("toto"))
-        print("'admin_secondary' (True)? ", _user_exists("admin_secondary"))
-        print(_password_matches("admin_secondary", "adminpass2"))
-        print(_is_admin("admin_secondary"))
-        print(_is_admin("writer_alice"))
