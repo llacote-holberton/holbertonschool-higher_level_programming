@@ -100,6 +100,7 @@ def homepage():
 
 
 @app.route('/basic-protected', methods=["GET"])
+@auth.login_required
 def user_auth__plain_password_check():
     """
     GET /basic-protected

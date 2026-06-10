@@ -133,6 +133,32 @@ def test_get_jwt_with_wrong_password():
     print(f"@dev RESULT: {response.status_code}, msg {response.json()}\n")
 
 
+def test_access_restricted_route_without_token():
+    """
+    Tests access to /jwt-protected with no token at all.
+    Expected: 401
+    """
+    response = requests.get(f"{server_url}/jwt-protected")
+    code = response.status_code
+    msg = response.json()
+    print(f"@dev RESULT no token: {code}, msg {msg}\n")
+
+
+def test_access_restricted_route_with_invalid_token():
+    """
+    Tests access to /jwt-protected with a malformed/invalid token.
+    Expected: 401
+    """
+    fake_token = "ceciNestPasUnToken"
+    response = requests.get(
+        f"{server_url}/jwt-protected",
+        headers={"Authorization": f"Bearer {fake_token}"}
+    )
+    code = response.status_code
+    msg = response.json()
+    print(f"@dev RESULT invalid token: {code}, msg {msg}\n")
+
+
 def test_access_restricted_route_as_standard():
     """
     Tests access to /jwt-protected as a standard user ('user_standard').
@@ -266,6 +292,10 @@ def run_tests():
 
     print("=== @dev Testing JWT retrieval AND use for 'user_standard' ===")
     test_access_restricted_route_as_standard()
+
+    print("=== @dev Testing restricted access without a valid token ===")
+    test_access_restricted_route_without_token()
+    test_access_restricted_route_with_invalid_token()
 
     print("=== @dev Testing access to admin area as an actual admin ^^ ===")
     test_access_admin_route_as_admin_role()
