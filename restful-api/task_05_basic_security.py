@@ -117,6 +117,32 @@ def request_restricted_access_with_jwt():
     # invalid_token_loader, expired_token_loader, unauthorized_loader etc
 
 
+# ===== JWT EXCEPTION HANDLERS, using examples provided by task =====
+@jwt.unauthorized_loader
+def handle_unauthorized_error(err):
+    return jsonify({"error": "Missing or invalid token"}), 401
+
+
+@jwt.invalid_token_loader
+def handle_invalid_token_error(err):
+    return jsonify({"error": "Invalid token"}), 401
+
+
+@jwt.expired_token_loader
+def handle_expired_token_error(err):
+    return jsonify({"error": "Token has expired"}), 401
+
+
+@jwt.revoked_token_loader
+def handle_revoked_token_error(err):
+    return jsonify({"error": "Token has been revoked"}), 401
+
+
+@jwt.needs_fresh_token_loader
+def handle_needs_fresh_token_error(err):
+    return jsonify({"error": "Fresh token required"}), 401
+
+
 if __name__ == "__main__":
     print("\n=== @dev: print users ===\n", users, "\n=== end ===\n", sep="\n")
     app.run()
