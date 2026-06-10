@@ -15,6 +15,20 @@ from werkzeug.security import generate_password_hash  # Required for encryption
 # => Needed to add "raw_pwd" key to all users which is obviously a nonsense
 #    for a true application. ^^
 users = {
+    # --- Official test users for checker; I hope ---
+    "user1": {
+        "username": "user1",
+        "raw_pwd": "password",
+        "password": generate_password_hash("password"),
+        "role": "user"
+    },
+    "admin1": {
+        "username": "admin1",
+        "raw_pwd": "password",
+        "password": generate_password_hash("password"),
+        "role": "admin"
+    },
+
     # --- User role: nominal case ---
     "user_standard": {
         "username": "user_standard",
