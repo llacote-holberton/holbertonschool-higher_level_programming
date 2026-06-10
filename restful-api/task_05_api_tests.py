@@ -20,9 +20,10 @@ def test_login_with_autoheader():
     """
     Tests Basic Auth on /basic-protected using requests' built-in auth tuple,
     which auto-generates the Authorization: Basic header.
-    Two cases covered:
+    Three cases covered:
       - Invalid user 'lolo'         → expected 401
       - Valid user 'user_standard'  → expected 200
+      - Anonymous user (no auth)    → expected 401
     """
     lolo__response = requests.get(
         f"{server_url}/basic-protected",
@@ -35,6 +36,41 @@ def test_login_with_autoheader():
         f"{server_url}/basic-protected",
         auth=("user_standard", "password123")
         # Generates the Authorization: Basic header
+    )
+    print(user_standard__response)
+
+    anonymous__response = requests.get(
+        f"{server_url}/basic-protected"
+    )
+    print(anonymous__response)
+
+
+def test_login_without_autoheader():
+    """
+    Tests Basic Auth on /basic-protected by manually crafting
+    the Authorization: Basic header (without requests' auth tuple).
+    Two cases covered:
+      - Invalid user 'lolo'         → expected 401
+      - Valid user 'user_standard'  → expected 200
+    """
+    import base64
+
+    # Invalid user
+    lolo_credentials = base64.b64encode(b"lolo:1234456").decode("utf-8")
+    lolo__response = requests.get(
+        f"{server_url}/basic-protected",
+        headers={"Authorization": f"Basic {lolo_credentials}"}
+    )
+    print(lolo__response)
+
+    # Valid user
+    valid_credentials = (
+        base64.b64encode(b"user_standard:password123")
+        .decode("utf-8")
+    )
+    user_standard__response = requests.get(
+        f"{server_url}/basic-protected",
+        headers={"Authorization": f"Basic {valid_credentials}"}
     )
     print(user_standard__response)
 
@@ -208,8 +244,15 @@ def test_access_writer_route_as_writer_role():
 
 def run_tests():
     print("======= START Auth API TESTS ========")
+
+    print("=== @dev Testing Home (expected 200) ===")
     test_home()
+
+    print("=== @dev Testing Basic Auth with auto-generated headers ===")
     test_login_with_autoheader()
+
+    print("=== @dev Testing Basic Auth WITHOUT auto-generated headers ===")
+    test_login_without_autoheader()
 
     print("=== @dev Testing JWT retrieval for VALID users ===")
     for user in users:
