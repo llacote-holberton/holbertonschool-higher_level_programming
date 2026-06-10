@@ -38,6 +38,8 @@ app.config["JWT_SECRET_KEY"] = "Python docs suck in general but JWT is worse!"
 #                                          #basic-authentication-example
 auth = HTTPBasicAuth()
 
+# REQUIRED instanciation EXACTLY LIKE THIS to use the JWT auth system.
+jwt = JWTManager(app)
 
 def _user_exists(username: str) -> bool:
     return any(u.get('username') == username for u in users.values())
@@ -76,11 +78,27 @@ def homepage():
     return "Welcome on my mini-simulation of Auth management"
 
 
-@app.route('/basic-protected')
+@app.route('/basic-protected', methods=["GET"])
 def user_auth__plain_password_check():
     access_confirmation = "Basic Auth: Access Granted"
     return access_confirmation
 
+
+@app.route('/login', methods=["POST"])
+def user_auth__get_jwt_token():
+    # Reminder: request is an object magically instanciated
+    #   with the right context by Flask
+    username = request.json.get("username", None)
+    # Second argument of that get is a fallback value
+    password = request.json.get("password", None)
+    if username is None or not _user_exists(username):
+        return jsonify(msg="Invalid username"), 401
+    if not _password_matches(username, password):
+        return jsonify(msg="Wrong password"), 401
+    # Identity param is mandatory but you can put complex objects in it
+    #   as long as it is serialized.
+    user_jwt = create_access_token(identity=username)
+    return jsonify(access_token=user_jwt)
 
 if __name__ == "__main__":
     print("\n=== @dev: print users ===\n", users, "\n=== end ===\n", sep="\n")
