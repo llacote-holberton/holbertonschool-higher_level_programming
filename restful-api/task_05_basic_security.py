@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Module experimenting with AUTH security management"""
 
+# ==========  0. IMPORTS ==========
 from flask import Flask    # Required to set up a webapp
 from flask import jsonify  # Required for simple json manipulation
 from flask import request  # Required for POST requests to login and get token.
@@ -23,6 +24,7 @@ from flask_httpauth import HTTPBasicAuth  # Required for "basic auth"
 # Custom module externalizing users's registry for readability/maintainability.
 from task_05_users_registry import users
 
+# ==========  0. SERVER APP's Config + enabling BasicAuth & JWT-Auth ==========
 # Creating our Flask app, providing script name for simplicity.
 app = Flask(__name__)
 # Adding a config parameter later used as a "secret part" for our hashes.
@@ -44,10 +46,17 @@ jwt = JWTManager(app)
 
 
 def _user_exists(username: str) -> bool:
+    """Checks whether a username exists in the users registry."""
     return any(u.get('username') == username for u in users.values())
 
 
 def _password_matches(username: str, password: str) -> bool:
+    """
+    Verifies a plain-text password against the stored hash for a given user.
+    Warning: assumes the user exists (call _user_exists beforehand).
+    Warning: assumes registry structure where key & username are identical.
+    """
+
     # This time we know all content of our users registry
     #   so here exceptionally we just assume "key == username"
     stored_password_hash = users[username].get('password')
@@ -63,13 +72,22 @@ def _password_matches(username: str, password: str) -> bool:
 
 
 def _is_admin(username: str) -> bool:
-    # Same as above: we assume key == username AND role has only one str value.
-    # We also assume the "user exists" check has been made beforehand!
+    """
+    Checks whether a given user holds the 'admin' role.
+    NOTE: same assumptions as for _password_matches
+    AND assumption that role metadata only holds one single string value.
+    """
     return users[username].get('role') == "admin"
 
 
 @auth.verify_password
-def verify_password(username, password):
+def verify_password(username, password) -> bool:
+    """
+    Flask-HTTPAuth callback. Automatically called when a route decorated
+    with @auth.login_required receives a request.
+    Extracts credentials from the Authorization: Basic header and
+    delegates verification to _user_exists and _password_matches.
+    """
     if not _user_exists(username):
         return False
     return _password_matches(username, password)
@@ -77,17 +95,31 @@ def verify_password(username, password):
 
 @app.route('/')
 def homepage():
+    """Returns a plain-text welcome message. No authentication required."""
     return "Welcome on my mini-simulation of Auth management"
 
 
 @app.route('/basic-protected', methods=["GET"])
 def user_auth__plain_password_check():
+    """
+    GET /basic-protected
+    Protected by HTTP Basic Authentication via @auth.login_required.
+    Returns a confirmation message if credentials are valid.
+    Expected: 200 "Basic Auth: Access Granted"
+    """
     access_confirmation = "Basic Auth: Access Granted"
     return access_confirmation
 
 
 @app.route('/login', methods=["POST"])
 def user_auth__get_jwt_token():
+    """
+    POST /login
+    Accepts a JSON payload with 'username' and 'password'.
+    Validates credentials against the registry and returns a signed JWT.
+    Expected: 200 {"access_token": "<JWT>"} or 401 on invalid credentials.
+    """
+
     # Reminder: request is an object magically instanciated
     #   with the right context by Flask
     username = request.json.get("username", None)
@@ -108,6 +140,13 @@ def user_auth__get_jwt_token():
 # Otherwise it sends error 422 (by default) immediately.
 @jwt_required()
 def request_restricted_access_with_jwt():
+    """
+    GET /jwt-protected
+    Protected by @jwt_required(). Grants access to any authenticated user
+    regardless of role. Token validation is handled entirely by the decorator.
+    Expected: 200 {"access_confirmation": "JWT Auth: Access Granted"}
+    """
+
     # If we get here then by design there is a valid jwt usable in context.
     # Python automagically "extracts" the "identity" and "claims" metadata
     #   from the token provided in Request Headers.
@@ -121,6 +160,13 @@ def request_restricted_access_with_jwt():
 @app.route('/admin-only', methods=["GET"])
 @jwt_required()
 def request_admin_access_with_jwt():
+    """
+    GET /admin-only
+    Protected by @jwt_required(). Grants access only to users with the 'admin'
+    role. Role is verified live against the registry (not from the token)
+    to ensure revoked or changed roles are always up to date.
+    Expected: 200 on success, 403 {"error": "Admin access required"} otherwise.
+    """
     required_role = 'admin'
     msg__access_granted = "Admin Access: Granted"
     msg__access_refused_invalid_role = "Admin access required"
@@ -140,6 +186,14 @@ def request_admin_access_with_jwt():
 # ===== EXTRA ROUTES to demonstrate VARIANTS USES of JWT =====
 @app.route('/get_jwt_with_role', methods=["POST"])
 def user_auth__get_jwt_with_role():
+    """
+    POST /get_jwt_with_role  [EXTRA]
+    Variant of /login that embeds the user's role in the JWT payload
+    via additional_claims. Demonstrates the alternative approach where
+    authorization info is carried by the token rather than re-fetched
+    from the registry on each request.
+    Expected: 200 {"access_token": "<JWT>"} or 401 on invalid credentials.
+    """
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     if username is None or not _user_exists(username):
@@ -160,6 +214,14 @@ def user_auth__get_jwt_with_role():
 @app.route('/writer-only', methods=["GET"])
 @jwt_required()
 def request_writer_access_with_jwt_bearing_role():
+    """
+    GET /writer-only  [EXTRA]
+    Protected by @jwt_required(). Grants access only to users whose JWT
+    contains a 'role' claim equal to 'writer'. Demonstrates role-based
+    access control using additional_claims embedded in the token,
+    as opposed to the live registry lookup used in /admin-only.
+    Expected: 200 on success, 403 {"error": "Writer role required"} otherwise.
+    """
     required_role = 'writer'
     msg__access_granted = "Content Edition Access: Granted"
     msg__access_refused_invalid_role = "Writer role required"
@@ -175,26 +237,31 @@ def request_writer_access_with_jwt_bearing_role():
 # ===== JWT EXCEPTION HANDLERS, using examples provided by task =====
 @jwt.unauthorized_loader
 def handle_unauthorized_error(err):
+    """JWT error handler: missing or absent token → 401."""
     return jsonify({"error": "Missing or invalid token"}), 401
 
 
 @jwt.invalid_token_loader
 def handle_invalid_token_error(err):
+    """JWT error handler: malformed or tampered token → 401."""
     return jsonify({"error": "Invalid token"}), 401
 
 
 @jwt.expired_token_loader
 def handle_expired_token_error(err):
+    """JWT error handler: expired token → 401."""
     return jsonify({"error": "Token has expired"}), 401
 
 
 @jwt.revoked_token_loader
 def handle_revoked_token_error(err):
+    """JWT error handler: explicitly revoked token → 401."""
     return jsonify({"error": "Token has been revoked"}), 401
 
 
 @jwt.needs_fresh_token_loader
 def handle_needs_fresh_token_error(err):
+    """JWT error handler: route requires a fresh token → 401."""
     return jsonify({"error": "Fresh token required"}), 401
 
 

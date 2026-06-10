@@ -6,12 +6,24 @@ from task_05_users_registry import users  # Used to automate tests on all users
 server_url = "http://localhost:5000"      # Global var for tests consistency
 
 
+# ========== UNIT "Quick & dirty debug 'test' functions"  ==========
 def test_home():
+    """
+    Tests availability of the home route.
+    Expected: 200 OK.
+    """
     homepage = requests.get(f"{server_url}/")
     print(homepage)
 
 
 def test_login_with_autoheader():
+    """
+    Tests Basic Auth on /basic-protected using requests' built-in auth tuple,
+    which auto-generates the Authorization: Basic header.
+    Two cases covered:
+      - Invalid user 'lolo'         → expected 401
+      - Valid user 'user_standard'  → expected 200
+    """
     lolo__response = requests.get(
         f"{server_url}/basic-protected",
         # tuple (username, password)
@@ -27,8 +39,16 @@ def test_login_with_autoheader():
     print(user_standard__response)
 
 
-def test_get_jwt_for_valid(user):
+def test_get_jwt_for_valid(user: dict):
+    """
+    Tests JWT retrieval on /login for a given valid user.
+    Prints the retrieved token on success.
 
+    Args:
+        user: a user dict from the registry
+              (must contain 'username' and 'raw_pwd')
+    Expected: 200 + access_token in response body.
+    """
     valid_name = user.get('username')
     valid_pwd = user.get('raw_pwd')
     print(f"@dev REQUEST: JWT for user '{valid_name}' / pwd '{valid_pwd}'")
@@ -44,7 +64,11 @@ def test_get_jwt_for_valid(user):
 
 
 def test_get_jwt_for_inexisting_user():
-
+    """
+    Tests JWT retrieval on /login for a user...
+        That does not exist in the registry.
+    Expected: 401 Unauthorized.
+    """
     inexisting = "Nemo"
     pwd = "hidden"
     print(f"@dev REQUEST: JWT for inexisting usr '{inexisting}' / pwd '{pwd}'")
@@ -56,6 +80,11 @@ def test_get_jwt_for_inexisting_user():
 
 
 def test_get_jwt_with_wrong_password():
+    """
+    Tests JWT retrieval on /login for a valid user...
+        Providing an incorrect password.
+    Expected: 401 Unauthorized.
+    """
     valid_name = users['user_standard'].get('username')
     valid_pwd = users['user_standard'].get('raw_pwd')
     wrong_pwd = valid_pwd + 'THIS IS WRONG!'
@@ -69,6 +98,11 @@ def test_get_jwt_with_wrong_password():
 
 
 def test_access_restricted_route_as_standard():
+    """
+    Tests access to /jwt-protected as a standard user ('user_standard').
+    Flow: retrieves a JWT via /login then uses it as Bearer token.
+    Expected: 200 + success message.
+    """
     valid_name = users['user_standard'].get('username')
     valid_pwd = users['user_standard'].get('raw_pwd')
     print(f"@dev Getting JWT for usr '{valid_name}'")
@@ -91,6 +125,11 @@ def test_access_restricted_route_as_standard():
 
 
 def test_access_admin_route_as_admin_role():
+    """
+    Tests access to /admin-only as a legitimate admin user ('admin_main').
+    Flow: retrieves a JWT via /login then uses it as Bearer token.
+    Expected: 200 + admin success message.
+    """
     valid_name = users['admin_main'].get('username')
     valid_pwd = users['admin_main'].get('raw_pwd')
     print(f"@dev Getting JWT for usr '{valid_name}'")
@@ -113,6 +152,11 @@ def test_access_admin_route_as_admin_role():
 
 
 def test_access_admin_route_as_standard_role():
+    """
+    Tests access to /admin-only as a standard user ('User_CaseSensitive').
+    Flow: retrieves a valid JWT via /login then attempts admin access.
+    Expected: 403 Forbidden.
+    """
     std_usr = users['User_CaseSensitive'].get('username')
     pwd = users['User_CaseSensitive'].get('raw_pwd')
     print(f"@dev Getting JWT for usr '{std_usr}'")
@@ -135,6 +179,12 @@ def test_access_admin_route_as_standard_role():
 
 
 def test_access_writer_route_as_writer_role():
+    """
+    Tests access to /writer-only as a writer user ('writer_alice').
+    Flow: retrieves a JWT with role claim via /get_jwt_with_role,
+    then uses it as Bearer token.
+    Expected: 200 + success message.
+    """
     writer = users['writer_alice'].get('username')
     pwd = users['writer_alice'].get('raw_pwd')
     print(f"@dev Getting JWT for usr '{writer}'")
@@ -156,17 +206,17 @@ def test_access_writer_route_as_writer_role():
     print(f"@dev RESULT for {writer}: {code}, msg {msg}\n")
 
 
-if __name__ == "__main__":
+def run_tests():
     print("======= START Auth API TESTS ========")
     test_home()
     test_login_with_autoheader()
 
-    # print("=== @dev Testing JWT retrieval for VALID users ===")
-    # for user in users:
-    #     test_get_jwt_for_valid(users.get(user))
+    print("=== @dev Testing JWT retrieval for VALID users ===")
+    for user in users:
+        test_get_jwt_for_valid(users.get(user))
 
-    # print("=== @dev Testing JWT retrieval for INEXISTING user ===")
-    # test_get_jwt_for_inexisting_user()
+    print("=== @dev Testing JWT retrieval for INEXISTING user ===")
+    test_get_jwt_for_inexisting_user()
 
     print("=== @dev Testing JWT retrieval for 1st user with wrong pwd ===")
     test_get_jwt_with_wrong_password()
@@ -182,3 +232,9 @@ if __name__ == "__main__":
 
     print("=== @dev Testing access to content management area as a writer ===")
     test_access_writer_route_as_writer_role()
+
+    print("======= END Auth API TESTS ========")
+
+
+if __name__ == "__main__":
+    run_tests()
