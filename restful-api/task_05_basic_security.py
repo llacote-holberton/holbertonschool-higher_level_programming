@@ -153,7 +153,7 @@ def request_restricted_access_with_jwt():
     #   from the token provided in Request Headers.
     current_user = get_jwt_identity()
     # Above: useful IF we wanted to use the username contained in the jwt
-    return jsonify(access_confirmation="JWT Auth: Access Granted")
+    return "JWT Auth: Access Granted"
     # ONLY WAY to control "error handling" is using specific @jwt.* decorators:
     # invalid_token_loader, expired_token_loader, unauthorized_loader etc
 
@@ -179,7 +179,7 @@ def request_admin_access_with_jwt():
     current_user = users[current_username]
     if current_user.get('role') == required_role:
         # Reminder: if nothing specified Flask automagically sets 200 status.
-        return jsonify(msg__access_granted)
+        return msg__access_granted
     else:
         return jsonify(error=msg__access_refused_invalid_role), 403
 
