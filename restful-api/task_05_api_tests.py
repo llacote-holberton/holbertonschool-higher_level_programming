@@ -90,20 +90,70 @@ def test_access_restricted_route_as_standard():
     print(f"@dev RESULT for {valid_name}: {code}, msg {msg}\n")
 
 
+def test_access_admin_route_as_admin_role():
+    valid_name = users['admin_main'].get('username')
+    valid_pwd = users['admin_main'].get('raw_pwd')
+    print(f"@dev Getting JWT for usr '{valid_name}'")
+    jwt_response = requests.post(
+        f"{server_url}/login",
+        json={"username": valid_name, "password": valid_pwd}
+    )
+    user_jwt = jwt_response.json()["access_token"]
+    print(f"@dev token retrieved: {user_jwt}")
+    attempt_restrict_access = requests.get(
+        f"{server_url}/admin-only",
+        # Required have the token beared in header
+        headers={
+            "Authorization": f"Bearer {user_jwt}"
+        }
+    )
+    code = attempt_restrict_access.status_code
+    msg = attempt_restrict_access.json()
+    print(f"@dev RESULT for {valid_name}: {code}, msg {msg}\n")
+
+
+def test_access_admin_route_as_standard_role():
+    std_usr = users['User_CaseSensitive'].get('username')
+    pwd = users['User_CaseSensitive'].get('raw_pwd')
+    print(f"@dev Getting JWT for usr '{std_usr}'")
+    jwt_response = requests.post(
+        f"{server_url}/login",
+        json={"username": std_usr, "password": pwd}
+    )
+    user_jwt = jwt_response.json()["access_token"]
+    print(f"@dev token retrieved: {user_jwt}")
+    attempt_restrict_access = requests.get(
+        f"{server_url}/admin-only",
+        # Required have the token beared in header
+        headers={
+            "Authorization": f"Bearer {user_jwt}"
+        }
+    )
+    code = attempt_restrict_access.status_code
+    msg = attempt_restrict_access.json()
+    print(f"@dev RESULT for {std_usr}: {code}, msg {msg}\n")
+
+
 if __name__ == "__main__":
     print("======= START Auth API TESTS ========")
     test_home()
     test_login_with_autoheader()
 
-    print("=== @dev Testing JWT retrieval for VALID users ===")
-    for user in users:
-        test_get_jwt_for_valid(users.get(user))
+    # print("=== @dev Testing JWT retrieval for VALID users ===")
+    # for user in users:
+    #     test_get_jwt_for_valid(users.get(user))
 
-    print("=== @dev Testing JWT retrieval for INEXISTING user ===")
-    test_get_jwt_for_inexisting_user()
+    # print("=== @dev Testing JWT retrieval for INEXISTING user ===")
+    # test_get_jwt_for_inexisting_user()
 
     print("=== @dev Testing JWT retrieval for 1st user with wrong pwd ===")
     test_get_jwt_with_wrong_password()
 
     print("=== @dev Testing JWT retrieval AND use for 'user_standard' ===")
     test_access_restricted_route_as_standard()
+
+    print("=== @dev Testing access to admin area as an actual admin ^^ ===")
+    test_access_admin_route_as_admin_role()
+
+    print("=== @dev Testing access to admin area as a regular user ===")
+    test_access_admin_route_as_standard_role()

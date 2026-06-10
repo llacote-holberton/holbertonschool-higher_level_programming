@@ -8,6 +8,7 @@ from flask import request  # Required for POST requests to login and get token.
 # JWT = Json Web Token, encrypted string of 3 things: header.payload.signature
 from flask_jwt_extended import create_access_token  # JWT Session generator
 from flask_jwt_extended import get_jwt_identity     # Decodes payload in JWT
+from flask_jwt_extended import get_jwt              # Extracts all JWT infos
 from flask_jwt_extended import jwt_required         # Decorator to impose auth.
 from flask_jwt_extended import JWTManager
 # Werkzeug (German) stands for "work tools" library of tools for webapps
@@ -115,6 +116,25 @@ def request_restricted_access_with_jwt():
     return jsonify(access_confirmation="JWT Auth: Access Granted")
     # ONLY WAY to control "error handling" is using specific @jwt.* decorators:
     # invalid_token_loader, expired_token_loader, unauthorized_loader etc
+
+
+@app.route('/admin-only', methods=["GET"])
+@jwt_required()
+def request_admin_access_with_jwt():
+    required_role = 'admin'
+    msg__access_granted = "Admin Access: Granted"
+    msg__access_refused_invalid_role = "Admin access required"
+    # Because admin is extra sensitive area
+    # Even if it is less performant than the "role in token" approach
+    # I prefer just (re)loading all user data from registry and check directly
+    #   the roles of currently authenticated user.
+    current_username = get_jwt_identity()
+    current_user = users[current_username]
+    if current_user.get('role') == required_role:
+        # Reminder: if nothing specified Flask automagically sets 200 status.
+        return jsonify(msg__access_granted)
+    else:
+        return jsonify(error=msg__access_refused_invalid_role), 403
 
 
 # ===== JWT EXCEPTION HANDLERS, using examples provided by task =====
