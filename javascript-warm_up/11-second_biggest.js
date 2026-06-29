@@ -12,8 +12,11 @@ const numberArguments = process.argv.slice(2).map(Number);
 function sortNumbersInDescendingOrder (a, b) { return b - a; }
 
 // Using intermediate Set back and forth conversion to remove duplicates.
-const finalArray = Array.from(new Set(numberArguments)).sort(sortNumbersInDescendingOrder);
-console.log(finalArray[1]);
+if (numberArguments.length < 2) console.log(0);
+else {
+  const finalArray = Array.from(new Set(numberArguments)).sort(sortNumbersInDescendingOrder);
+  console.log(finalArray[1]);
+}
 
 /* ===== Task instructions ====
  * Write a script that searches the second biggest integer in the list of arguments.
