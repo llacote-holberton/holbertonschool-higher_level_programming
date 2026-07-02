@@ -9,6 +9,7 @@ logging.basicConfig(
     filename='task_00_errors.log',
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s')
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def is_exploitable_input(template, attendees):
@@ -31,15 +32,38 @@ def is_exploitable_input(template, attendees):
     return True
 
 
+def inject_data_in_text(data, text):
+    for placeholder_name, value_to_inject in data.items():
+        if not value_to_inject:
+            value_to_inject = 'N/A'
+        text = text.replace('{' + placeholder_name + '}', value_to_inject)
+    return text
+
+
 def generate_invitations(template: str, attendees: list):
     """Uses provided template and event data list to generate invitations"""
-    print("@dev: inside generate_invitations")
+    log.debug("@dev: inside generate_invitations")
     if not is_exploitable_input(template, attendees):
         return
     # We have a template and data, hoping they are actually exploitable.
     # Logic imo should be:
-    # We traverse the data list. For each...
+    # We traverse the data list.
+    attendees_count = 0
+    for attendee in attendees:
+    # For each...
+        # We define its number.
+        attendees_count += 1
     # 0) We generate the filename and check if it exists already
+        # Filename imposed as output_X.txt with X being number attributed.
+        filename = f"output_{attendees_count}.txt"
+        output_path = os.path.join(script_dir, filename)
+        if os.path.exists(output_path):
+            log.info(f"Invitation with name {filename} exists, skipping")
+            continue
+        else:
+            personalized_invite = inject_data_in_text(attendee, str(template))
+            with open(output_path, 'w') as output_file:
+                output_file.write(personalized_invite)
     #    (making the assumption no external process would have affected it).
     #    If it already exists we consider it's already processed and continue.
     #    Otherwise...
@@ -65,7 +89,6 @@ if __name__ == "__main__":
 
     # REQUIRED to have the pre-commit hook run properly
     #   (needs to get an absolute path to files used)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
     template_path = os.path.join(script_dir, 'template.txt')
     with open(template_path, 'r') as file:
         template_content = file.read()
@@ -73,10 +96,10 @@ if __name__ == "__main__":
 
     # INVALID inputs
     # Invalid list content 1
-    print("=== Generating invitations from invalid list content 1")
+    log.info("=== Generating invitations from invalid list content 1")
     generate_invitations("string", [1, 3, "toto"])
     # Invalid list content 2
-    print("=== Generating invitations from invalid list content 2")
+    log.info("=== Generating invitations from invalid list content 2")
     generate_invitations(
         "string",
         [
@@ -86,10 +109,10 @@ if __name__ == "__main__":
         ]
     )
     # Empty template
-    print("=== Generating invitations from empty template")
+    log.info("=== Generating invitations from empty template")
     generate_invitations("", [{"name": "Empty template"}])
     # Empty list
-    print("=== Generating invitations from empty list")
+    log.info("=== Generating invitations from empty list")
     generate_invitations("Empty list", [])
 
 # ===== BUSINESS REQUIREMENTS =====
