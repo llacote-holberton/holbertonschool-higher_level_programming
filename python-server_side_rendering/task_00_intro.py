@@ -11,15 +11,6 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def valid_inputs(template, attendees):
-    log.debug("@dev inside check_inputs function")
-    return (
-        isinstance(template, str)
-        and isinstance(attendees, list)
-        and all(isinstance(subscription, dict) for subscription in attendees)
-    )
-
-
 def is_exploitable_input(template, attendees):
     """Makes all checks to ensure we have all needed to generate invitations"""
 
