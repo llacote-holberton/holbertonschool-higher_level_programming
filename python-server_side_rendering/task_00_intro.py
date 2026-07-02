@@ -6,8 +6,8 @@ import os
 
 log = logging.getLogger('task_00_generator')
 logging.basicConfig(
-    filename='task_00_errors.log',
-    level=logging.INFO,
+    # filename='task_00_traces.log',
+    level=logging.ERROR,
     format='%(asctime)s - %(levelname)s - %(message)s')
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -50,7 +50,7 @@ def generate_invitations(template: str, attendees: list):
     # We traverse the data list.
     attendees_count = 0
     for attendee in attendees:
-    # For each...
+        # For each...
         # We define its number.
         attendees_count += 1
     # 0) We generate the filename and check if it exists already
@@ -77,7 +77,9 @@ def generate_invitations(template: str, attendees: list):
 
 
 if __name__ == "__main__":
+    log.info("===== Task__00__intro.py: STARTING RUN =====")
     # VALID USE-CASE
+    log.info("=== Calling function with valid input (expected: 3 files ===")
     attendees = [
         {"name": "Alice", "event_title": "Python Conference",
          "event_date": "2023-07-15", "event_location": "New York"},
@@ -86,10 +88,12 @@ if __name__ == "__main__":
         {"name": "Charlie", "event_title": "AI Summit",
          "event_date": None, "event_location": "Boston"}
     ]
+    log.debug(f"Attendees list: {attendees}")
 
     # REQUIRED to have the pre-commit hook run properly
     #   (needs to get an absolute path to files used)
     template_path = os.path.join(script_dir, 'template.txt')
+    log.debug(f"Full path for template is: {template_path}")
     with open(template_path, 'r') as file:
         template_content = file.read()
     generate_invitations(template_content, attendees)
