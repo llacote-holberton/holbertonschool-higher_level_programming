@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Uses a template to create personalized invitation files"""
 
-import logging
-import os
+import logging  # Useful to track how script behaves.
+import os       # Required to manipulate filesystem.
+import re       # Required to find and replace template's placeholders.
 
 log = logging.getLogger('task_00_generator')
 logging.basicConfig(
@@ -33,10 +34,11 @@ def is_exploitable_input(template, attendees):
 
 
 def inject_data_in_text(data, text):
-    for placeholder_name, value_to_inject in data.items():
-        if not value_to_inject:
-            value_to_inject = 'N/A'
-        text = text.replace('{' + placeholder_name + '}', value_to_inject)
+    """Finds placeholders in text and replaces them with dict value or N/A"""
+    placeholders = re.findall(r'\{(\w+)\}', text)
+    for placeholder_name in placeholders:
+        replacement = data.get(placeholder_name) or 'N/A'
+        text = text.replace('{' + placeholder_name + '}', replacement)
     return text
 
 
@@ -119,6 +121,10 @@ if __name__ == "__main__":
     log.info("=== Generating invitations from empty list")
     generate_invitations("Empty list", [])
 
+    # Incomplete dictionary
+    log.info("=== Generating invitations for a single, incomplete attendee")
+    generate_invitations(template_content, [{"name": "Incomplete"}])
+
 # ===== BUSINESS REQUIREMENTS =====
 # Errors must be logged for each of these situations
 # - Parameters don't match expected types (string, list of dictionaries)
@@ -128,3 +134,18 @@ if __name__ == "__main__":
 # - List is empty
 #     ->  "No data provided, no output files generated."
 # If any error found terminate function
+
+# ===== DESIGN NOTES =====
+# == On placeholder identification and replacement process ===
+# Warning: it is the template which should be "Source of Truth" because it
+#   is the thing exposed to end-users. NOT the data.
+# Especially since (now that I think about it) my previous logic made code
+#   parse all dict elements even those which aren't expected in template
+#   generating useless process.
+# So we must dynamically get the list of placeholders from the template
+#   and ensure "fallback value" so generator works in all situations.
+
+# == On regex pattern used ==
+# Note: '\{' '\}' required to have {} searched literally.
+# Enclosing "any word" '\w+' in () ensures we can "extract" that word
+#   without the brackets so we directly have the key to search in dict.
