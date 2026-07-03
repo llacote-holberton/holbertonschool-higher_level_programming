@@ -113,7 +113,11 @@ def products():
             error = "product_not_found"
         else:
             product = next(
-                (p for p in products_set if p.get('id') == str(product_id)),
+                # Forced conversion to str required because id is read as str
+                #   in csv BUT as int in json. And str is guaranteed to work
+                #   while an int conversion can fail.
+                (p for p in products_set
+                 if str(p.get('id')) == str(product_id)),
                 None
             )
             if product is None:
