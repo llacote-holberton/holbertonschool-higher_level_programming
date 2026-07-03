@@ -20,7 +20,13 @@
         {% else %}
           <table>
             <tr> <th>Name</th> <th>Category</th> <th>Price</th> </tr>
-            <tr> <td>S</td> <td>T</td> <td>U</td> </tr>
+            {% for product in products_set %}
+            <tr>
+              <td>product.get('name')</td>
+              <td></td>
+              <td></td>
+            </tr>
+            {% endfor %}
           </table>
         {% endif %}
     {% endif %}

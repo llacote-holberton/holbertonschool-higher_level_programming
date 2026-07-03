@@ -37,7 +37,7 @@ def get_csv_from_file(file_basename):
     else:
         with open(source_path, 'r') as raw_csv:
             log.debug(raw_csv)
-            # return
+            return {}
 
 
 SOURCE_HANDLERS = {
@@ -103,12 +103,20 @@ def products():
         error = "invalid_source"
     else:
         products_set = file_handler('products')
-        log.debug(products_set)
+        log.debug(f"Products set retrieved is: {products_set}")
+        # Unextractable file or empty dict
+        if not products_set:
+            log.debug("No products could be retrieved from given filename")
+            error = "invalid_source"
     # THEN prepare the final dataset "products_set" to send to template:
     # EMPTY if nothing exploitable in source
     # ALL if no id specified
     # If id specified but not found set error value as "product_not_found"
-    return render_template('product_display.html')
+    return render_template(
+        'product_display.html',
+        error=error,
+        products_set=products_set
+    )
 
 
 if __name__ == '__main__':
