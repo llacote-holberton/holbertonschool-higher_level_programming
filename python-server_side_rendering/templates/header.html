@@ -1,3 +1,13 @@
 <header>
   <h1>My Flask App</h1>
+  <nav>
+    <ul>
+      <!-- @note: since we are creating a mini-website powered by a Python webserver -->
+      <!-- the targets must be "dynamic url matching route names" instead of relative/absolute paths to files -->
+      <!-- as it's the responsability of our engine to "find the real files" and assemble the page -->
+      <li><a href="/">Home</a></li>      <!-- <li><a href="/index.html">Home</a></li> -->
+      <li><a href="/about">About</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+  </nav>
 </header>
