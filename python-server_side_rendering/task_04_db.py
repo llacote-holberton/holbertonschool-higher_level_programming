@@ -17,7 +17,7 @@ logging.basicConfig(
 
 
 # =============== SOURCE EXTRACTION FROM FILES ===============
-def get_json_from_file(file_basename):
+def get_products_from_json_file(file_basename):
     """Returns a dict created from parsing json file, or empty dict"""
     source_path = os.path.join(script_dir, file_basename + '.json')
     log.debug(f"Get json: requested source path is {source_path}")
@@ -29,7 +29,7 @@ def get_json_from_file(file_basename):
             return json.load(raw_json)
 
 
-def get_csv_from_file(file_basename):
+def get_products_from_csv_file(file_basename):
     """Returns a dict created from parsing csv file, or empty dict"""
     source_path = os.path.join(script_dir, file_basename + '.csv')
     log.debug(f"Get csv: requested source path is {source_path}")
@@ -43,7 +43,7 @@ def get_csv_from_file(file_basename):
             return list(csv_reader)
 
 
-def get_sql_from_file(file_basename):
+def get_products_from_sqlite_file(file_basename):
     """Returns a dict created from parsing SQLite db file, or empty dict"""
     source_path = os.path.join(script_dir, file_basename + '.db')
     log.debug(f"Get SQLite db: requested source path is {source_path}")
@@ -65,9 +65,9 @@ def get_sql_from_file(file_basename):
 
 
 SOURCE_HANDLERS = {
-  "json": get_json_from_file,
-  "csv": get_csv_from_file,
-  "sql": get_sql_from_file
+  "json": get_products_from_json_file,
+  "csv": get_products_from_csv_file,
+  "sql": get_products_from_sqlite_file
 }
 
 
