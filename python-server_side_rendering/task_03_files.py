@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request
 import os    # Required to get the json source
 import json  # Required to get structured data from json text stream
+import csv   # Required to get structured data from csv text stream
 import logging  # Useful to track how script behaves.
 
 
@@ -37,7 +38,8 @@ def get_csv_from_file(file_basename):
     else:
         with open(source_path, 'r') as raw_csv:
             log.debug(raw_csv)
-            return {}
+            csv_reader = csv.DictReader(raw_csv)
+            return list(csv_reader)
 
 
 SOURCE_HANDLERS = {
