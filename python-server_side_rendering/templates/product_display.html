@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+  <title>Products Display</title>
+  <style>
+      table { border-collapse: collapse; }
+      table, th, td { border: 2px solid turquoise; }
+  </style>
+  </head>
+  <body>
+    {% include 'header.html' %}
+    <h1>Products Display</h1>
+    <p>This is a simple table listing available products</p>
+    {% if error and error == "invalid_source" %}
+      <p>Wrong source</p>
+    {% else %}
+        {% if error == "product_not_found" %}
+          <p>Product not found</p>
+        {% else %}
+          <table>
+            <tr> <th>Name</th> <th>Category</th> <th>Price</th> </tr>
+            <tr> <td>S</td> <td>T</td> <td>U</td> </tr>
+          </table>
+        {% endif %}
+    {% endif %}
+
+
+
+    {% include 'footer.html' %}
+  </body>
+</html>
