@@ -1,3 +1,7 @@
 # Temporary files related to the task 00.
 output*.txt
 task_00_*.log
+
+# Temporary files related to the use of pyenv to set specific Python version
+#   (so I reuse all the Flask/ORM installations from a previous project)
+.python-version
