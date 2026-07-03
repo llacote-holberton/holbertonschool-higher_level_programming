@@ -88,17 +88,12 @@ def products():
 
     error = None
     products_set = None
-    # ONLY SUPPORTED VALUES: 'csv' and 'json'
-    source = request.args.get('source')
+
+    source = request.args.get('source')  # Only SOURCE_HANDLERS keys supported
     log.debug(f"Source parameter is: {source}")
-    # OPTIONAL filter
-    product_id = request.args.get('id')
+    product_id = request.args.get('id')  # None/invalid provided -> list all.
     log.debug(f"Product id parameter is: {product_id}")
 
-    # FIRST ENSURE we have actual data to leverage
-    #   = supported source type and existing+readable file
-    #   otherwise set an "error variable" valued as "invalid_source"
-    #   so in template it's the "error message" which is displayed.
     file_handler = SOURCE_HANDLERS.get(source)
     if not file_handler:
         log.error("Handler not found!")
@@ -106,11 +101,28 @@ def products():
     else:
         products_set = file_handler('products')
         log.debug(f"Products set retrieved is: {products_set}")
-        # Unextractable file or empty dict
-        if not products_set:
+        if not products_set:  # Unextractable file or empty dict
             log.debug("No products could be retrieved from given filename")
             error = "invalid_source"
     # THEN prepare the final dataset "products_set" to send to template:
+    # Adding error check because no need to snowball into failure otherwise.
+    if error is None and product_id is not None:
+        try:
+            product_id = int(product_id)
+        except ValueError:
+            log.error(f"Couldn't read parameter as an integer")
+            error = "product_not_found"
+        else:
+            product = next(
+                (p for p in products_set if p.get('id') == str(product_id)),
+                None
+            )
+            if product is None:
+                log.info(f"No product with id {product_id} found")
+                error = "product_not_found"
+            else:
+                products_set = [product]
+
     # EMPTY if nothing exploitable in source
     # ALL if no id specified
     # If id specified but not found set error value as "product_not_found"
@@ -123,3 +135,23 @@ def products():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
+# ====== DRAFT NOTES =======
+# TOO CONVOLUTED AND ERROR PRONE.
+# class ProductIdNotFoundError(Exception):
+#     pass
+# We have the "else" keyword precisely to make a conditional branch
+#   for when some instructions in a try block executed without raising errors.
+# try:
+#     product_id = int(product_id)
+#     product = next(
+#         (p for p in products_set if p.get('id') == str(product_id)),
+#         None
+#     )
+#     if not product:
+#       raise ProductIdNotFoundError(f"No product with id {product_id} found")
+# except ValueError:
+#     log.error(f"Couldn't read parameter as an integer")
+#     error = "product_not_found"
+# except ProductIdNotFoundError as e:
+#     log.error(e)
