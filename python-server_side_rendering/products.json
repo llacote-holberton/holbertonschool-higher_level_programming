@@ -5,5 +5,5 @@
   {"id": 4, "name": "Milk Cream", "category": "Food", "price": 2.99},
   {"id": 5, "name": "Office Chair", "category": "Home Goods", "price": 234.99},
   {"id": 6, "name": "HR Screen", "category": "Electronics", "price": 675.52},
-  {"id": 7, "name": "Pillow", "category": "Home Goods", "price": 7.99},
+  {"id": 7, "name": "Pillow", "category": "Home Goods", "price": 7.99}
 ]
